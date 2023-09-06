@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import * as dat from 'lil-gui'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 const gui = new dat.GUI()
 
@@ -8,12 +9,12 @@ THREE.ColorManagement.enabled = false
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
 
-const backgroundTexture = textureLoader.load("textures/Abstract_006_SD/Abstract_006_COLOR.jpg")
+const backgroundTexture = textureLoader.load("background.jpg")
 const backgroundTextureDisplacement = textureLoader.load("textures/Abstract_006_SD/Abstract_006_DISP.png")
 const backgroundTextureOCC = textureLoader.load("textures/Abstract_006_SD/Abstract_006_OCC.jpg")
 const backgroundTextureNorm = textureLoader.load("textures/Abstract_006_SD/Abstract_006_NORM.jpg")
 
-// backgroundTexture.mapping = THREE.MirroredRepeatWrapping
+backgroundTexture.mapping = THREE.MirroredRepeatWrapping
 
 
 const canvas = document.querySelector('canvas.webgl')
@@ -52,20 +53,33 @@ scene.add(mesh)
 // Raycaster
 const raycaster = new THREE.Raycaster()
 
-
+// Camera
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+camera.position.z = 3
+scene.add(camera)
 
 // Lights
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
 scene.add(ambientLight)
 
-const light = new THREE.PointLight( 0xffffff, 15, 100 );
-light.position.set( 1, 1, 1);
-scene.add( light );
+const pointLight = new THREE.PointLight( 0xffffff, 15, 100 );
+pointLight.position.set(0, 0 , 2);
+scene.add( pointLight );
 
-// Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.z = 3
-scene.add(camera)
+// Functions
+
+// Defaults
+const sphereGeometry = new THREE.SphereGeometry()
+
+const addFlyingSphere = () => {
+
+}
+
+
+// Cam controls
+const orbitControls = new OrbitControls(camera, canvas)
+orbitControls.enableDamping = true
+
 
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -80,7 +94,7 @@ const clock = new THREE.Clock()
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     renderer.render(scene, camera)
-
+    orbitControls.update(camera)
     window.requestAnimationFrame(tick)
 }
 
