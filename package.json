@@ -1,0 +1,17 @@
+{
+  "name": "threejs-aimlabs",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "three": "^0.156.1",
+    "lil-gui": "^0.18.1"
+  }
+}
