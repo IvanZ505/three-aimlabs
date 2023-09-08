@@ -5,6 +5,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 const gui = new dat.GUI()
 const debugItems = {}
 
+var stop = false
+
 debugItems.addFlyingSphere = () => {
     addFlyingSphere(
         {
@@ -25,6 +27,12 @@ debugItems.reset = () => {
 
 gui.add(debugItems, 'reset')
 
+debugItems.stop = () => {
+    stop = true
+    console.log(stop)
+}
+
+gui.add(debugItems, 'stop')
 
 THREE.ColorManagement.enabled = false
 
@@ -141,9 +149,6 @@ const addFlyingSphere = (position) => {
     // console.log(objToUpdate)
 }
 
-// Start this shit up
-
-
 // Cam controls
 // const orbitControls = new OrbitControls(camera, canvas)
 // orbitControls.enableDamping = true
@@ -163,10 +168,12 @@ const tick = () => {
 
 
     const elapsedTime = clock.getElapsedTime()
+    document.getElementById("timer").innerHTML = Math.round(60 - elapsedTime)
+    console.log(elapsedTime)
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
 
-    console.log(deltaTime)
+    // console.log(deltaTime)
 
     for(const obj of objToUpdate) {
         obj.position.z += deltaTime
