@@ -8,8 +8,8 @@ const debugItems = {}
 debugItems.addFlyingSphere = () => {
     addFlyingSphere(
         {
-            x: (Math.random() - 0.5) * 1,
-            y: (Math.random() - 0.5) *1,
+            x: (Math.random() - 0.5) * 10,
+            y: (Math.random() - 0.5) *10,
             z: -10
         }
     )
@@ -36,7 +36,7 @@ const backgroundTextureDisplacement = textureLoader.load("textures/Abstract_006_
 const backgroundTextureOCC = textureLoader.load("textures/Abstract_006_SD/Abstract_006_OCC.jpg")
 const backgroundTextureNorm = textureLoader.load("textures/Abstract_006_SD/Abstract_006_NORM.jpg")
 
-backgroundTexture.mapping = THREE.MirroredRepeatWrapping
+// backgroundTexture.mapping = THREE.MirroredRepeatWrapping
 
 
 const canvas = document.querySelector('canvas.webgl')
@@ -70,25 +70,47 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 camera.position.z = 3
 scene.add(camera)
 
-// Objects
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const material = new THREE.MeshStandardMaterial({ color: 0xff0000 })
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+// Test Objects
+const test = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5, 16, 16),
+    new THREE.MeshBasicMaterial({ color: '#ff0000' })
+)
 
-// Raycaster
-const raycaster = new THREE.Raycaster()
-var pointer = new THREE.Vector2()
+test.updateMatrixWorld()
+
+// scene.add(test)
+
+var mouse = new THREE.Vector2()
 
 // Get Client x and y
 window.addEventListener('mousemove', (e) => {
-    pointer.x = (e.clientX / sizes.width) * 2 -1
-    pointer.y = -(e.clientY / sizes.width) * 2 -1
-
-    // console.log(pointer.x, pointer.y)
+    mouse.x = e.clientX / sizes.width *2 - 1
+    mouse.y = -(e.clientY / sizes.height *2 -1)
+    // console.log(mouse)
 })
 
-// raycaster.set(new THREE.Vector3(-3,0,0), (new THREE.Vector3(1, 0, 0)).normalize())
+var objectHovered = null
+window.addEventListener('click', () => {
+    if(objectHovered != null) {
+        for(const item of scene.children) {
+            // console.log(item)
+            if(item.id == objectHovered.object.id) {
+                scene.remove(item)
+            }
+        }
+        
+    }
+})  
+
+// Raycaster
+const raycaster = new THREE.Raycaster()
+raycaster.set(new THREE.Vector3(-3,0,0), (new THREE.Vector3(1, 0, 0)).normalize())
+
+// Raycaster helper
+const arrow = new THREE.ArrowHelper()
+arrow.setLength(100)
+arrow.setColor(0xff0013)
+// scene.add(arrow)
 
 
 // Lights
@@ -101,7 +123,6 @@ scene.add( pointLight );
 
 // Defaults
 const sphereGeometry = new THREE.SphereGeometry(1, 20, 20)
-const sphereMaterial = new THREE.MeshStandardMaterial({color: 0xff0000})
 const objToUpdate = []
 
 // Functions
@@ -109,14 +130,19 @@ const objToUpdate = []
 const addFlyingSphere = (position) => {
     const mesh = new THREE.Mesh(
         sphereGeometry,
-        sphereMaterial
+        new THREE.MeshStandardMaterial({color: 0xff0000})
+
     )
     mesh.position.copy(position)
     objToUpdate.push(mesh)
-    scene.add(mesh)
     mesh.updateMatrixWorld()
-    console.log(objToUpdate)
+
+    scene.add(mesh)
+    // console.log(objToUpdate)
 }
+
+// Start this shit up
+
 
 // Cam controls
 // const orbitControls = new OrbitControls(camera, canvas)
@@ -131,29 +157,51 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
 const clock = new THREE.Clock()
+var previousTime = 0
 
 const tick = () => {
 
 
     const elapsedTime = clock.getElapsedTime()
+    const deltaTime = elapsedTime - previousTime
+    previousTime = elapsedTime
+
+    console.log(deltaTime)
 
     for(const obj of objToUpdate) {
-        obj.position.z += elapsedTime/1000
+        obj.position.z += deltaTime
     }
 
     // Update raycaster
 
     // console.log(scene.children)
-    raycaster.setFromCamera(pointer, camera)
+    raycaster.setFromCamera(mouse, camera)
+    arrow.setDirection(raycaster.ray.direction)
+    // console.log(raycaster)
 
-    console.log(raycaster.ray.direction)
-    const intersects = raycaster.intersectObjects( objToUpdate );
+    const raycasterItems = []
+    for(const items of objToUpdate) {
+        raycasterItems.push(items)
+    }
+    const intersects = raycaster.intersectObjects(scene.children)
 
-	for ( let i = 0; i < intersects.length; i ++ ) {
+    // Color the ones that get intersected
+    for(const items of raycasterItems) {
+        items.material.color.set('#ff0000')
+    }
+    for(const intersected of intersects) {
+        // console.log(intersected)
+        intersected.object.material.color.set('#CDC0ff')
+    }
 
-		intersects[ i ].object.material.color.set( 0xfff000 );
+    if(intersects.length != 0) {
+        objectHovered = intersects[0]
+        // console.log(objectHovered)
 
-	}
+    } else {
+        objectHovered = null
+    }
+
     
 
     renderer.render(scene, camera)
