@@ -108,7 +108,7 @@ window.addEventListener('click', () => {
         }
         
     }
-})  
+})
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -149,6 +149,15 @@ const addFlyingSphere = (position) => {
     // console.log(objToUpdate)
 }
 
+const startGame = () => {
+        addFlyingSphere({
+            x: (Math.random() - 0.5) * 10,
+            y: (Math.random() - 0.5) *10,
+            z: -10
+        })
+    }
+
+
 // Cam controls
 // const orbitControls = new OrbitControls(camera, canvas)
 // orbitControls.enableDamping = true
@@ -163,13 +172,28 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 const clock = new THREE.Clock()
 var previousTime = 0
+var gameTime = 60
+var elapsedTimeBetweenGameTimes = 0
+var gamePrevousTime = 60
 
 const tick = () => {
 
 
     const elapsedTime = clock.getElapsedTime()
-    document.getElementById("timer").innerHTML = Math.round(60 - elapsedTime)
-    console.log(elapsedTime)
+    if(!stop) { 
+        gameTime = 60 - elapsedTime
+        elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
+        if(elapsedTimeBetweenGameTimes >= 1 && gameTime > 0) {
+            gamePrevousTime = gameTime
+            startGame(gameTime, gamePrevousTime)
+        }
+        if(gameTime > 0) { 
+            document.getElementById("timer").innerHTML = Math.round(gameTime)
+        }
+        
+        console.log(gamePrevousTime - gameTime)
+
+    }
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
 
