@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import * as dat from 'lil-gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
+// Debug
 const gui = new dat.GUI()
 const debugItems = {}
 
@@ -27,6 +28,7 @@ debugItems.reset = () => {
 
 gui.add(debugItems, 'reset')
 
+// Stop the game
 debugItems.stop = () => {
     stop = true
     console.log(stop)
@@ -36,13 +38,42 @@ gui.add(debugItems, 'stop')
 
 THREE.ColorManagement.enabled = false
 
+
+/**
+ * 
+ * Global Variables
+ * 
+ * Get user preferred speeds and difficulty
+ * 
+ * Also, keep track of clocks and different necessary arrays
+ */
+
+
+const difficulties = []
+
+// Time
+var previousTime = 0
+var gameTime = 60
+var elapsedTimeBetweenGameTimes = 0
+var gamePrevousTime = 60
+
+const objToUpdate = []
+
+console.log(document.querySelector("div.popup"))
+
+
+// Scorekeeping
+
+var score = 0
+var missed = 0
+
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
 
 const backgroundTexture = textureLoader.load("background.jpg")
-const backgroundTextureDisplacement = textureLoader.load("textures/Abstract_006_SD/Abstract_006_DISP.png")
-const backgroundTextureOCC = textureLoader.load("textures/Abstract_006_SD/Abstract_006_OCC.jpg")
-const backgroundTextureNorm = textureLoader.load("textures/Abstract_006_SD/Abstract_006_NORM.jpg")
+// const backgroundTextureDisplacement = textureLoader.load("textures/Abstract_006_SD/Abstract_006_DISP.png")
+// const backgroundTextureOCC = textureLoader.load("textures/Abstract_006_SD/Abstract_006_OCC.jpg")
+// const backgroundTextureNorm = textureLoader.load("textures/Abstract_006_SD/Abstract_006_NORM.jpg")
 
 // backgroundTexture.mapping = THREE.MirroredRepeatWrapping
 
@@ -104,6 +135,7 @@ window.addEventListener('click', () => {
             // console.log(item)
             if(item.id == objectHovered.object.id) {
                 scene.remove(item)
+                score++
             }
         }
         
@@ -131,7 +163,6 @@ scene.add( pointLight );
 
 // Defaults
 const sphereGeometry = new THREE.SphereGeometry(1, 20, 20)
-const objToUpdate = []
 
 // Functions
 
@@ -171,19 +202,23 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
 const clock = new THREE.Clock()
-var previousTime = 0
-var gameTime = 60
-var elapsedTimeBetweenGameTimes = 0
-var gamePrevousTime = 60
 
 const tick = () => {
 
 
     const elapsedTime = clock.getElapsedTime()
+
+    if(!stop && gameTime <= 0) {
+        stop = true
+        document.getElementById("timer").innerHTML = "Game Over!"
+        document.querySelector("div.popup").style.display = "content"
+    }
     if(!stop) { 
         gameTime = 60 - elapsedTime
         elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
-        if(elapsedTimeBetweenGameTimes >= 1 && gameTime > 0) {
+
+        // Add difficulty multiplier
+        if(elapsedTimeBetweenGameTimes >= 0.5 && gameTime > 0) {
             gamePrevousTime = gameTime
             startGame(gameTime, gamePrevousTime)
         }
@@ -200,7 +235,15 @@ const tick = () => {
     // console.log(deltaTime)
 
     for(const obj of objToUpdate) {
-        obj.position.z += deltaTime
+        if(obj.position.z > camera.position.z) {
+            scene.remove(obj)
+            objToUpdate.splice(objToUpdate.indexOf(obj), 1)
+            missed++
+            // console.log(objToUpdate)
+        }
+
+        // Add difficulty multiplier
+        obj.position.z += deltaTime *8
     }
 
     // Update raycaster
