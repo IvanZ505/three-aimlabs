@@ -8,17 +8,6 @@ const debugItems = {}
 
 var stop = false
 
-debugItems.addFlyingSphere = () => {
-    addFlyingSphere(
-        {
-            x: (Math.random() - 0.5) * 10,
-            y: (Math.random() - 0.5) *10,
-            z: -10
-        }
-    )
-}
-gui.add(debugItems, 'addFlyingSphere')
-
 // Reset objects
 debugItems.reset = () => {
     for(const objects of objToUpdate) {
@@ -48,46 +37,48 @@ THREE.ColorManagement.enabled = false
  * Also, keep track of clocks and different necessary arrays
  */
 
+
+// Time
+var totalGameTime = 10
+var previousTime = 0
+var gameTime = totalGameTime
+var elapsedTimeBetweenGameTimes = 0
+var gamePrevousTime = totalGameTime
+const clock = new THREE.Clock()
+
+const objToUpdate = []
+
 var selectedDifficulty = 0
 const difficulties = [
     {
         name: "Easy",
         speed: 1,
-        spawnrate: 0.75,
-        score: 100
+        spawnrate: 1,
+        score: 100,
+        quantity: 1 * totalGameTime
     },
     {
         name: "Medium",
         speed: 2,
         spawnrate: 0.5,
-        score: 200
+        score: 200,
+        quantity: 2 * totalGameTime
     },
     {
         name: "Hard",
         speed: 3,
         spawnrate: 0.25,
-        score: 300
+        score: 300,
+        quantity: 4 * totalGameTime
     }
 ]
-
-// Time
-var genGameTime = 60
-var previousTime = 0
-var gameTime = genGameTime
-var elapsedTimeBetweenGameTimes = 0
-var gamePrevousTime = genGameTime
-
-const objToUpdate = []
-
 
 
 // Scorekeeping
 
 var score = 0
-var missed = 0
 
-document.getElementById("popup").setAttribute("style", "display: none")
-
+hidePopup()
 
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
@@ -145,18 +136,11 @@ window.addEventListener('click', () => {
             if(item.id == objectHovered.object.id) {
                 scene.remove(item)
                 score++
+                // console.log(score)
             }
         }
         
     }
-})
-
-document.querySelector('.start-button').addEventListener('click', (e) => {
-    // Get the difficulty
-    selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value
-    console.log(selectedDifficulty)
-    document.getElementById("popup2").setAttribute("style", "display: none")
-    tick()
 })
 
 // Camera
@@ -220,6 +204,46 @@ const startGame = () => {
         })
     }
 
+// Start Button
+
+const startFunction = (e) => {
+    // Get the difficulty
+    selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value
+    console.log(selectedDifficulty)
+    document.getElementById("popup2").setAttribute("style", "display: none")
+    stop = false
+    tick()
+}
+
+document.querySelector('.start-button').addEventListener('click', startFunction)
+
+
+const stopGame = () => {
+    stop = true
+    document.getElementById("timer").innerHTML = "Game Over!"
+    document.getElementById("popup").removeAttribute("style", "display: none")
+    document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
+    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score
+    document.querySelector('.popup-button').addEventListener('click', restartGame)
+}
+
+// Hide popup
+function hidePopup() {
+    document.getElementById("popup").setAttribute("style", "display: none")
+}
+
+// Restart game
+
+const restartGame = () => {
+    hidePopup()
+    clock.elapsedTime = 0
+    document.getElementById("popup2").removeAttribute("style", "display: none")
+    score = 0
+    gameTime = totalGameTime
+    gamePrevousTime = totalGameTime
+    elapsedTimeBetweenGameTimes = 0
+    previousTime = 0
+}
 
 // Cam controls
 // const orbitControls = new OrbitControls(camera, canvas)
@@ -232,24 +256,16 @@ renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-
-const clock = new THREE.Clock()
-
 const tick = () => {
 
-
+    if(!stop) {
     const elapsedTime = clock.getElapsedTime()
 
     if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
-        stop = true
-        document.getElementById("timer").innerHTML = "Game Over!"
-        document.getElementById("popup").removeAttribute("style", "display: none")
-        document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
-        document.querySelector(".popup-missed").innerHTML =  missed
-
+        stopGame()
     }
     if(!stop) { 
-        gameTime = genGameTime - elapsedTime
+        gameTime = totalGameTime - elapsedTime
         elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
 
         // Add difficulty multiplier
@@ -273,7 +289,6 @@ const tick = () => {
         if(obj.position.z > camera.position.z) {
             scene.remove(obj)
             objToUpdate.splice(objToUpdate.indexOf(obj), 1)
-            missed++
             // console.log(objToUpdate)
         }
 
@@ -316,4 +331,5 @@ const tick = () => {
     renderer.render(scene, camera)
     // orbitControls.update(camera)
     window.requestAnimationFrame(tick)
+}
 }
