@@ -52,20 +52,23 @@ THREE.ColorManagement.enabled = false
 const difficulties = []
 
 // Time
+var genGameTime = 10
 var previousTime = 0
-var gameTime = 60
+var gameTime = genGameTime
 var elapsedTimeBetweenGameTimes = 0
-var gamePrevousTime = 60
+var gamePrevousTime = genGameTime
 
 const objToUpdate = []
 
-console.log(document.querySelector("div.popup"))
 
 
 // Scorekeeping
 
 var score = 0
 var missed = 0
+
+document.getElementById("popup").setAttribute("style", "display: none")
+
 
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
@@ -208,13 +211,15 @@ const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
 
-    if(!stop && gameTime <= 0) {
+    if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
         stop = true
         document.getElementById("timer").innerHTML = "Game Over!"
-        document.querySelector("div.popup").style.display = "content"
+        document.getElementById("popup").removeAttribute("style", "display: none")
+        document.querySelector(".popup-score").innerHTML =  score
+
     }
     if(!stop) { 
-        gameTime = 60 - elapsedTime
+        gameTime = genGameTime - elapsedTime
         elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
 
         // Add difficulty multiplier
