@@ -48,11 +48,30 @@ THREE.ColorManagement.enabled = false
  * Also, keep track of clocks and different necessary arrays
  */
 
-
-const difficulties = []
+var selectedDifficulty = 0
+const difficulties = [
+    {
+        name: "Easy",
+        speed: 1,
+        spawnrate: 0.75,
+        score: 100
+    },
+    {
+        name: "Medium",
+        speed: 2,
+        spawnrate: 0.5,
+        score: 200
+    },
+    {
+        name: "Hard",
+        speed: 3,
+        spawnrate: 0.25,
+        score: 300
+    }
+]
 
 // Time
-var genGameTime = 10
+var genGameTime = 60
 var previousTime = 0
 var gameTime = genGameTime
 var elapsedTimeBetweenGameTimes = 0
@@ -92,6 +111,8 @@ const sizes = {
     height: window.innerHeight
 }
 
+// Event Listeners
+
 window.addEventListener('resize', () =>
 {
     // Update sizes
@@ -106,21 +127,6 @@ window.addEventListener('resize', () =>
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
-
-// Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.z = 3
-scene.add(camera)
-
-// Test Objects
-const test = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 16, 16),
-    new THREE.MeshBasicMaterial({ color: '#ff0000' })
-)
-
-test.updateMatrixWorld()
-
-// scene.add(test)
 
 var mouse = new THREE.Vector2()
 
@@ -144,6 +150,29 @@ window.addEventListener('click', () => {
         
     }
 })
+
+document.querySelector('.start-button').addEventListener('click', (e) => {
+    // Get the difficulty
+    selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value
+    console.log(selectedDifficulty)
+    document.getElementById("popup2").setAttribute("style", "display: none")
+    tick()
+})
+
+// Camera
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+camera.position.z = 3
+scene.add(camera)
+
+// Test Objects
+const test = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5, 16, 16),
+    new THREE.MeshBasicMaterial({ color: '#ff0000' })
+)
+
+test.updateMatrixWorld()
+
+// scene.add(test)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -215,7 +244,8 @@ const tick = () => {
         stop = true
         document.getElementById("timer").innerHTML = "Game Over!"
         document.getElementById("popup").removeAttribute("style", "display: none")
-        document.querySelector(".popup-score").innerHTML =  score
+        document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
+        document.querySelector(".popup-missed").innerHTML =  missed
 
     }
     if(!stop) { 
@@ -223,7 +253,7 @@ const tick = () => {
         elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
 
         // Add difficulty multiplier
-        if(elapsedTimeBetweenGameTimes >= 0.5 && gameTime > 0) {
+        if(elapsedTimeBetweenGameTimes >= difficulties[selectedDifficulty].spawnrate && gameTime > 0) {
             gamePrevousTime = gameTime
             startGame(gameTime, gamePrevousTime)
         }
@@ -231,7 +261,7 @@ const tick = () => {
             document.getElementById("timer").innerHTML = Math.round(gameTime)
         }
         
-        console.log(gamePrevousTime - gameTime)
+        // console.log(gamePrevousTime - gameTime)
 
     }
     const deltaTime = elapsedTime - previousTime
@@ -248,7 +278,7 @@ const tick = () => {
         }
 
         // Add difficulty multiplier
-        obj.position.z += deltaTime *8
+        obj.position.z += deltaTime * 3 * difficulties[selectedDifficulty].speed
     }
 
     // Update raycaster
@@ -287,5 +317,3 @@ const tick = () => {
     // orbitControls.update(camera)
     window.requestAnimationFrame(tick)
 }
-
-tick()

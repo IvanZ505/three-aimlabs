@@ -10,11 +10,32 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <p class="timer" id="timer">60</p>
+        <p class="timer" id="timer"></p>
+
         <div class="popup" id="popup">
                 <h2 class="popup-title">Game Over</h2>
                 <p class="popup-text">Your score is <span class="popup-score">0</span></p>
+                <p class="popup-text">You missed <span class="popup-missed">0</span></p>
                 <button class="popup-button">Play Again</button>
+        </div>
+
+        <div class="popup" id="popup2">
+            <div class="start-menu">
+            <h2 class="popup-title">Choose your difficulty</h2>
+            <div class="diff">
+            <input type="radio" id="easy" class="radio" name="difficulty" value=0>
+            <label for="difficulty">Easy</label>
+        </div>
+        <div class="diff">
+            <input type="radio" id="medium" class="radio" name="difficulty" value=1>
+            <label for="medium">Medium</label>
+        </div>
+        <div class="diff">
+            <input type="radio" id="hard" class="radio" name="difficulty" value=2>
+            <label for="hard">Hard</label>
+        </div>
+        <button class="start-button" id="start">Start</button>
+        </div>
         </div>
         <!--Canvas-->
         <canvas class="webgl"></canvas>
