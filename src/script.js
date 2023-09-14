@@ -149,25 +149,23 @@ window.addEventListener('click', () => {
 })
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000)
 camera.position.z = 3
+camera.children = []
 scene.add(camera)
 
 // Test 
-const testGeometry = new THREE.SphereGeometry(20, 16, 16)
-testGeometry.scale(-1, 1, 1)
+const testGeometry = new THREE.SphereGeometry(100, 32, 32)
+const testMat = new THREE.MeshBasicMaterial({ map: backgroundTexture,   side: THREE.BackSide})
 const test = new THREE.Mesh(
-    testGeometry,
-    new THREE.MeshBasicMaterial({ map: backgroundTexture,   side: THREE.BackSide
-       })
-)
+    testGeometry, testMat
+    )
 
-test.rotation.y = -0.5
 test.scale.x = -1
-
-test.updateMatrixWorld()
+test.position.z = -5
 
 scene.add(test)
+camera.children.push(test)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -257,8 +255,8 @@ const restartGame = () => {
 }
 
 // Cam controls
-const orbitControls = new OrbitControls(camera, canvas)
-orbitControls.enableDamping = true
+// const orbitControls = new OrbitControls(camera, canvas)
+// orbitControls.enableDamping = true
 
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -337,6 +335,7 @@ const tick = () => {
         objectHovered = null
     }
 
+    console.log(test)
     
 
     renderer.render(scene, camera)
