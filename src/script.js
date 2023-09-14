@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 const gui = new dat.GUI()
 const debugItems = {}
 
-var stop = false
+var stop = true
 
 // Reset objects
 debugItems.reset = () => {
@@ -21,6 +21,7 @@ gui.add(debugItems, 'reset')
 debugItems.stop = () => {
     stop = true
     console.log(stop)
+    stopGame()
 }
 
 gui.add(debugItems, 'stop')
@@ -82,10 +83,6 @@ hidePopup()
 
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
-
-const backgroundTexture = textureLoader.load("desert_pana.jpeg")
-const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
-backgroundMat.side = THREE.DoubleSide
 
 
 const canvas = document.querySelector('canvas.webgl')
@@ -154,18 +151,30 @@ camera.position.z = 3
 camera.children = []
 scene.add(camera)
 
-// Test 
-const testGeometry = new THREE.SphereGeometry(100, 32, 32)
-const testMat = new THREE.MeshBasicMaterial({ map: backgroundTexture,   side: THREE.BackSide})
-const test = new THREE.Mesh(
-    testGeometry, testMat
+// Renderer
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvas
+})
+renderer.outputColorSpace = THREE.LinearSRGBColorSpace
+renderer.setSize(sizes.width, sizes.height)
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+// Background
+const backgroundGeo = new THREE.SphereGeometry(100, 32, 32)
+const backgroundTexture = textureLoader.load("desert_pana.jpeg")
+const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
+backgroundMat.side = THREE.DoubleSide
+const background = new THREE.Mesh(
+    backgroundGeo, backgroundMat
     )
 
-test.scale.x = -1
-test.position.z = -5
+background.scale.x = -1
+background.position.z = 3
 
-scene.add(test)
-camera.children.push(test)
+scene.add(background)
+camera.children.push(background)
+
+renderer.render(scene, camera)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -258,13 +267,6 @@ const restartGame = () => {
 // const orbitControls = new OrbitControls(camera, canvas)
 // orbitControls.enableDamping = true
 
-const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
-})
-renderer.outputColorSpace = THREE.LinearSRGBColorSpace
-renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
 const tick = () => {
 
     if(!stop) {
@@ -333,13 +335,11 @@ const tick = () => {
 
     } else {
         objectHovered = null
-    }
-
-    console.log(test)
-    
-
+    }    
+}
     renderer.render(scene, camera)
     // orbitControls.update(camera)
     window.requestAnimationFrame(tick)
 }
-}
+
+tick()
