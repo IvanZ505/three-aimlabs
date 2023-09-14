@@ -37,10 +37,11 @@ canvas {
     margin-right: 0.5rem;
 }
 
-.start-button {
-    border-radius: 5px;
+.popup-button, .start-button {
+    border-radius: 5rem;
     border-style: hidden;
-    width: 10vw;
+    width: 10rem;
+    height: 5vh;
 }
 
 .start-menu {

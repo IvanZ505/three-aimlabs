@@ -39,7 +39,7 @@ THREE.ColorManagement.enabled = false
 
 
 // Time
-var totalGameTime = 10
+var totalGameTime = 60
 var previousTime = 0
 var gameTime = totalGameTime
 var elapsedTimeBetweenGameTimes = 0
@@ -83,19 +83,15 @@ hidePopup()
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
 
-const backgroundTexture = textureLoader.load("background.jpg")
-// const backgroundTextureDisplacement = textureLoader.load("textures/Abstract_006_SD/Abstract_006_DISP.png")
-// const backgroundTextureOCC = textureLoader.load("textures/Abstract_006_SD/Abstract_006_OCC.jpg")
-// const backgroundTextureNorm = textureLoader.load("textures/Abstract_006_SD/Abstract_006_NORM.jpg")
-
-// backgroundTexture.mapping = THREE.MirroredRepeatWrapping
+const backgroundTexture = textureLoader.load("desert_pana.jpeg")
+const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
+backgroundMat.side = THREE.DoubleSide
 
 
 const canvas = document.querySelector('canvas.webgl')
 
 const scene = new THREE.Scene()
-scene.background = backgroundTexture
-// console.log(scene.background)
+
 
 const sizes = {
     width: window.innerWidth,
@@ -117,6 +113,15 @@ window.addEventListener('resize', () =>
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
+
+window.addEventListener('dblclick', () => {
+    // Fullscreen the canvas
+    if(!document.fullscreenElement) {
+        canvas.requestFullscreen()
+    } else {
+        document.exitFullscreen()
+    }
 })
 
 var mouse = new THREE.Vector2()
@@ -148,15 +153,21 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 camera.position.z = 3
 scene.add(camera)
 
-// Test Objects
+// Test 
+const testGeometry = new THREE.SphereGeometry(20, 16, 16)
+testGeometry.scale(-1, 1, 1)
 const test = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 16, 16),
-    new THREE.MeshBasicMaterial({ color: '#ff0000' })
+    testGeometry,
+    new THREE.MeshBasicMaterial({ map: backgroundTexture,   side: THREE.BackSide
+       })
 )
+
+test.rotation.y = -0.5
+test.scale.x = -1
 
 test.updateMatrixWorld()
 
-// scene.add(test)
+scene.add(test)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -246,8 +257,8 @@ const restartGame = () => {
 }
 
 // Cam controls
-// const orbitControls = new OrbitControls(camera, canvas)
-// orbitControls.enableDamping = true
+const orbitControls = new OrbitControls(camera, canvas)
+orbitControls.enableDamping = true
 
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
