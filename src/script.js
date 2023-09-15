@@ -44,7 +44,7 @@ THREE.ColorManagement.enabled = false
 
 
 // Time
-var totalGameTime = 10
+var totalGameTime = 60
 var previousTime = 0
 var gameTime = totalGameTime
 var elapsedTimeBetweenGameTimes = 0
@@ -119,6 +119,7 @@ window.addEventListener('keydown', (e) => {
     switch(e.key) {
         case "f":
             fullscreenPage()
+            previousTime = clock.getElapsedTime()
             break
         case "p":
             // Pause the game
@@ -279,7 +280,6 @@ document.querySelector('.start-button').addEventListener('click', startFunction)
 
 const stopGame = () => {
     stop = true
-    console.log(clock.running)
     pauseFunction()
     document.getElementById("timer").innerHTML = "Game Over!"
     document.getElementById("popup").removeAttribute("style", "display: none")
@@ -310,7 +310,6 @@ const restartGame = () => {
     gameTime = totalGameTime
     gamePrevousTime = totalGameTime
     elapsedTimeBetweenGameTimes = 0
-    previousTime = 0
 }
 
 // Raycaster function
