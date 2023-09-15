@@ -10,10 +10,13 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
+        <div class="fullscreen-popup" style="display: none;">
+            <div class="fullscreen-text">Please Enter fullscreen <br> Click f</div></div>
+
         <p class="timer" id="timer"></p>
 
         <div data-aos="fade-up" data-aos-duration="1500" data-aos-anchor-placement="bottom-bottom"
-        class="popup" id="popup">
+        class="popup aos-animate" id="popup">
                 <h2 class="popup-title">Game Over</h2>
                 <p class="popup-text">Your score is <span class="popup-score">0</span></p>
                 <p class="popup-text">You missed <span class="popup-missed">0</span></p>
@@ -21,7 +24,7 @@
         </div>
 
         <div data-aos="fade-up" data-aos-duration="1500" data-aos-anchor-placement="bottom-bottom"
-        class="popup" id="popup2">
+        class="popup aos-animate" id="popup2">
             <div class="start-menu">
             <h2 class="popup-title">Choose your difficulty</h2>
             <div class="diff">

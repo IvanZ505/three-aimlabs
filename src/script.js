@@ -1,12 +1,16 @@
 import * as THREE from 'three'
 import * as dat from 'lil-gui'
+import { difficulties } from './globals.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
 
-// Debug
-const gui = new dat.GUI()
+
+// // Debug
+var gui = new dat.GUI()
 const debugItems = {}
 
 var stop = true
+var pause = true
 
 // Reset objects
 debugItems.reset = () => {
@@ -26,6 +30,7 @@ debugItems.stop = () => {
 
 gui.add(debugItems, 'stop')
 
+
 THREE.ColorManagement.enabled = false
 
 
@@ -40,7 +45,7 @@ THREE.ColorManagement.enabled = false
 
 
 // Time
-var totalGameTime = 60
+export var totalGameTime = 60
 var previousTime = 0
 var gameTime = totalGameTime
 var elapsedTimeBetweenGameTimes = 0
@@ -50,29 +55,6 @@ const clock = new THREE.Clock()
 const objToUpdate = []
 
 var selectedDifficulty = 0
-const difficulties = [
-    {
-        name: "Easy",
-        speed: 1,
-        spawnrate: 1,
-        score: 100,
-        quantity: 1 * totalGameTime
-    },
-    {
-        name: "Medium",
-        speed: 2,
-        spawnrate: 0.5,
-        score: 200,
-        quantity: 2 * totalGameTime
-    },
-    {
-        name: "Hard",
-        speed: 3,
-        spawnrate: 0.25,
-        score: 300,
-        quantity: 4 * totalGameTime
-    }
-]
 
 
 // Scorekeeping
@@ -84,16 +66,14 @@ hidePopup()
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
 
+export const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight
+}
 
 const canvas = document.querySelector('canvas.webgl')
 
 const scene = new THREE.Scene()
-
-
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
 
 // Event Listeners
 
@@ -112,12 +92,35 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-window.addEventListener('dblclick', () => {
-    // Fullscreen the canvas
-    if(!document.fullscreenElement) {
-        canvas.requestFullscreen()
-    } else {
-        document.exitFullscreen()
+window.addEventListener('keypress', (e) => {
+    switch(e.key) {
+        case "f":
+            // Fullscreen the canvas
+            if(!document.fullscreenElement) {
+                document.documentElement.requestFullscreen()
+                document.querySelector(".fullscreen-popup").setAttribute("style", "display: none")
+            } else {
+                document.exitFullscreen()
+                if(!stop) {
+                    document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
+                    pauseFunction()
+                }
+            }
+            break
+        case "p":
+            // Pause the game
+            pauseFunction()
+            break
+        default:
+            console.log("No associated keypress")
+    }
+    
+})
+
+window.addEventListener('keydown', (e) => {
+    if(e.key == "Escape" && !stop && !document.requestFullscreen) {
+        document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
+        pauseFunction()
     }
 })
 
@@ -127,6 +130,7 @@ var mouse = new THREE.Vector2()
 window.addEventListener('mousemove', (e) => {
     mouse.x = e.clientX / sizes.width *2 - 1
     mouse.y = -(e.clientY / sizes.height *2 -1)
+
     // console.log(mouse)
 })
 
@@ -151,6 +155,7 @@ camera.position.z = 3
 camera.children = []
 scene.add(camera)
 
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -161,7 +166,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // Background
 const backgroundGeo = new THREE.SphereGeometry(100, 32, 32)
-const backgroundTexture = textureLoader.load("desert_pana.jpeg")
+const backgroundTexture = textureLoader.load("neon_pana.jpeg")
 const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
 backgroundMat.side = THREE.DoubleSide
 const background = new THREE.Mesh(
@@ -173,6 +178,7 @@ background.position.z = 3
 
 scene.add(background)
 camera.children.push(background)
+const controls = new PointerLockControls(camera, canvas)
 
 renderer.render(scene, camera)
 
@@ -224,11 +230,15 @@ const startGame = () => {
 
 // Start Button
 
-const startFunction = (e) => {
+const startFunction = () => {
     // Get the difficulty
     selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value
     console.log(selectedDifficulty)
     document.getElementById("popup2").setAttribute("style", "display: none")
+
+    if(!document.fullscreenElement) {
+        document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
+    }
     stop = false
     tick()
 }
@@ -243,6 +253,18 @@ const stopGame = () => {
     document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
     document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score
     document.querySelector('.popup-button').addEventListener('click', restartGame)
+}
+
+// Pause function
+const pauseFunction = () => {
+    if(!stop) {
+        pause = !pause
+        if(clock.running) {
+            clock.stop()
+        } else {
+            clock.start()
+        }
+    }
 }
 
 // Hide popup
@@ -263,63 +285,19 @@ const restartGame = () => {
     previousTime = 0
 }
 
-// Cam controls
-// const orbitControls = new OrbitControls(camera, canvas)
-// orbitControls.enableDamping = true
+// Raycaster function
 
-const tick = () => {
+var intersects = raycaster.intersectObjects(scene.children)
 
-    if(!stop) {
-    const elapsedTime = clock.getElapsedTime()
+const raycastUpdates = () => {
+    intersects = raycaster.intersectObjects(scene.children)
 
-    if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
-        stopGame()
-    }
-    if(!stop) { 
-        gameTime = totalGameTime - elapsedTime
-        elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
-
-        // Add difficulty multiplier
-        if(elapsedTimeBetweenGameTimes >= difficulties[selectedDifficulty].spawnrate && gameTime > 0) {
-            gamePrevousTime = gameTime
-            startGame(gameTime, gamePrevousTime)
-        }
-        if(gameTime > 0) { 
-            document.getElementById("timer").innerHTML = Math.round(gameTime)
-        }
-        
-        // console.log(gamePrevousTime - gameTime)
-
-    }
-    const deltaTime = elapsedTime - previousTime
-    previousTime = elapsedTime
-
-    // console.log(deltaTime)
-
-    for(const obj of objToUpdate) {
-        if(obj.position.z > camera.position.z) {
-            scene.remove(obj)
-            objToUpdate.splice(objToUpdate.indexOf(obj), 1)
-            // console.log(objToUpdate)
-        }
-
-        // Add difficulty multiplier
-        obj.position.z += deltaTime * 3 * difficulties[selectedDifficulty].speed
-    }
-
-    // Update raycaster
-
-    // console.log(scene.children)
     raycaster.setFromCamera(mouse, camera)
-    arrow.setDirection(raycaster.ray.direction)
-    // console.log(raycaster)
 
     const raycasterItems = []
     for(const items of objToUpdate) {
         raycasterItems.push(items)
     }
-    const intersects = raycaster.intersectObjects(scene.children)
-
     // Color the ones that get intersected
     for(const items of raycasterItems) {
         items.material.color.set('#ff0000')
@@ -328,15 +306,70 @@ const tick = () => {
         // console.log(intersected)
         intersected.object.material.color.set('#CDC0ff')
     }
-
     if(intersects.length != 0) {
         objectHovered = intersects[0]
         // console.log(objectHovered)
 
     } else {
         objectHovered = null
-    }    
+    } 
 }
+
+// Update Objects
+
+const updateObjects = (deltaTime) => {
+    for(const obj of objToUpdate) {
+        if(obj.position.z > camera.position.z) {
+            scene.remove(obj)
+            objToUpdate.splice(objToUpdate.indexOf(obj), 1)
+            // console.log(objToUpdate)
+        }
+
+    // Add difficulty multiplier
+    obj.position.z += deltaTime * 3 * difficulties[selectedDifficulty].speed
+    }
+}
+
+const updateTimer = () => {
+    if(elapsedTimeBetweenGameTimes >= difficulties[selectedDifficulty].spawnrate && gameTime > 0) {
+        gamePrevousTime = gameTime
+        startGame(gameTime, gamePrevousTime)
+    }
+    if(gameTime > 0) { 
+        document.getElementById("timer").innerHTML = Math.round(gameTime)
+    }
+}
+
+// Cam controls
+// const orbitControls = new OrbitControls(camera, canvas)
+// orbitControls.enableDamping = true
+
+const tick = () => {
+
+    if(!stop || !pause) {
+        const elapsedTime = clock.getElapsedTime()
+
+        if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
+            stopGame()
+        }
+        gameTime = totalGameTime - elapsedTime
+        elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
+
+        // Update Timer
+        updateTimer()
+            
+        // console.log(gamePrevousTime - gameTime)
+
+        const deltaTime = elapsedTime - previousTime
+        previousTime = elapsedTime
+
+        // Update objects
+        updateObjects(deltaTime)
+
+        // Update raycaster
+        raycastUpdates()
+    }
+
     renderer.render(scene, camera)
     // orbitControls.update(camera)
     window.requestAnimationFrame(tick)

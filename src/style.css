@@ -16,7 +16,7 @@ canvas {
     position: fixed;
     max-width: fit-content;
     padding-left: 1rem;
-    z-index: 1000;
+    z-index: 500;
 }
 
 .popup{
@@ -28,7 +28,27 @@ canvas {
     padding: 1rem;
     background-color: #fff;
     border-radius: 0.5rem;
+    z-index: 500;
+}
+
+.fullscreen-popup {
     z-index: 1000;
+    position: fixed;
+    outline: none;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10vw;
+    text-align: center;
+    background-color: rgba(32, 32, 32, 0.551) ;
+    opacity: 50%;
+}
+
+.fullscreen-text {
+    opacity: initial;
+    color: white;
 }
 
 .radio {
