@@ -284,7 +284,7 @@ const stopGame = () => {
     document.getElementById("timer").innerHTML = "Game Over!"
     document.getElementById("popup").removeAttribute("style", "display: none")
     document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
-    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score -1 
+    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score
     document.querySelector('.popup-button').addEventListener('click', restartGame)
     
 }
