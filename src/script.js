@@ -171,7 +171,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // Background
 const backgroundGeo = new THREE.SphereGeometry(100, 32, 32)
-const backgroundTexture = textureLoader.load("neon_pana.jpeg")
+const backgroundTexture = textureLoader.load("beach.jpeg")
 const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
 backgroundMat.side = THREE.DoubleSide
 const background = new THREE.Mesh(
@@ -225,7 +225,7 @@ const addFlyingSphere = (position) => {
     // console.log(objToUpdate)
 }
 
-const startGame = () => {
+const spawn = () => {
         addFlyingSphere({
             x: (Math.random() - 0.5) * 10,
             y: (Math.random() - 0.5) *10,
@@ -246,6 +246,7 @@ const startFunction = () => {
         pause = true
     }
 
+    clock.elapsedTime = 0
     stop = false
     tick()
 }
@@ -258,7 +259,7 @@ const stopGame = () => {
     document.getElementById("timer").innerHTML = "Game Over!"
     document.getElementById("popup").removeAttribute("style", "display: none")
     document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
-    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score
+    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score -1
     document.querySelector('.popup-button').addEventListener('click', restartGame)
 }
 
@@ -290,6 +291,7 @@ const restartGame = () => {
     gamePrevousTime = totalGameTime
     elapsedTimeBetweenGameTimes = 0
     previousTime = 0
+    
 }
 
 // Raycaster function
@@ -340,7 +342,7 @@ const updateObjects = (deltaTime) => {
 const updateTimer = () => {
     if(elapsedTimeBetweenGameTimes >= difficulties[selectedDifficulty].spawnrate && gameTime > 0) {
         gamePrevousTime = gameTime
-        startGame(gameTime, gamePrevousTime)
+        spawn(gameTime, gamePrevousTime)
     }
     if(gameTime > 0) { 
         document.getElementById("timer").innerHTML = Math.round(gameTime)
