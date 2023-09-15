@@ -92,36 +92,26 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-window.addEventListener('keypress', (e) => {
+window.addEventListener('keydown', (e) => {
     switch(e.key) {
         case "f":
-            // Fullscreen the canvas
-            if(!document.fullscreenElement) {
-                document.documentElement.requestFullscreen()
-                document.querySelector(".fullscreen-popup").setAttribute("style", "display: none")
-            } else {
-                document.exitFullscreen()
-                if(!stop) {
-                    document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
-                    pauseFunction()
-                }
-            }
+            fullscreenPage()
             break
         case "p":
             // Pause the game
             pauseFunction()
             break
+        
         default:
-            console.log("No associated keypress")
+            console.log(e.key)
     }
     
 })
 
-window.addEventListener('keydown', (e) => {
-    if(e.key == "Escape" && !stop && !document.requestFullscreen) {
-        document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
-        pauseFunction()
-    }
+// Fullscreen
+window.addEventListener('dblclick', () => {
+    // Fullscreen the canvas
+    fullscreenPage()
 })
 
 var mouse = new THREE.Vector2()
@@ -148,6 +138,21 @@ window.addEventListener('click', () => {
         
     }
 })
+
+// Fullscreen Change Event
+document.addEventListener('fullscreenchange', exitHandler);
+document.addEventListener('webkitfullscreenchange', exitHandler);
+document.addEventListener('mozfullscreenchange', exitHandler);
+document.addEventListener('MSFullscreenChange', exitHandler);
+
+function exitHandler() {
+    if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+        if(!stop) {
+            pauseFunction()
+            document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
+        }
+    }
+}  
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000)
@@ -238,7 +243,9 @@ const startFunction = () => {
 
     if(!document.fullscreenElement) {
         document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
+        pause = true
     }
+
     stop = false
     tick()
 }
@@ -340,13 +347,25 @@ const updateTimer = () => {
     }
 }
 
+const fullscreenPage = () => {
+    if(!document.fullscreenElement) {
+            document.querySelector(".fullscreen-popup").setAttribute("style", "display: none")
+            document.documentElement.requestFullscreen()
+            pauseFunction()
+
+    } else {
+        document.exitFullscreen()
+    }
+}
+
 // Cam controls
 // const orbitControls = new OrbitControls(camera, canvas)
 // orbitControls.enableDamping = true
 
 const tick = () => {
 
-    if(!stop || !pause) {
+
+    if(!stop && !pause) {
         const elapsedTime = clock.getElapsedTime()
 
         if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
