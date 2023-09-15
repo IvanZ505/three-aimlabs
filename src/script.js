@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import * as dat from 'lil-gui'
-import { difficulties } from './globals.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
 
@@ -45,7 +44,7 @@ THREE.ColorManagement.enabled = false
 
 
 // Time
-export var totalGameTime = 60
+var totalGameTime = 10
 var previousTime = 0
 var gameTime = totalGameTime
 var elapsedTimeBetweenGameTimes = 0
@@ -55,6 +54,30 @@ const clock = new THREE.Clock()
 const objToUpdate = []
 
 var selectedDifficulty = 0
+
+const difficulties = [
+    {
+        name: "Easy",
+        speed: 1,
+        spawnrate: 1,
+        score: 100,
+        quantity: 1 * totalGameTime
+    },
+    {
+        name: "Medium",
+        speed: 2,
+        spawnrate: 0.5,
+        score: 200,
+        quantity: 2 * totalGameTime
+    },
+    {
+        name: "Hard",
+        speed: 3,
+        spawnrate: 0.25,
+        score: 300,
+        quantity: 4 * totalGameTime
+    }
+]
 
 
 // Scorekeeping
@@ -66,7 +89,7 @@ hidePopup()
 // Textures Loader
 const textureLoader = new THREE.TextureLoader()
 
-export const sizes = {
+const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
@@ -171,7 +194,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // Background
 const backgroundGeo = new THREE.SphereGeometry(100, 32, 32)
-const backgroundTexture = textureLoader.load("beach.jpeg")
+const backgroundTexture = textureLoader.load("snow_day_pana.jpeg")
 const backgroundMat = new THREE.MeshBasicMaterial({ map: backgroundTexture })
 backgroundMat.side = THREE.DoubleSide
 const background = new THREE.Mesh(
@@ -243,11 +266,11 @@ const startFunction = () => {
 
     if(!document.fullscreenElement) {
         document.querySelector(".fullscreen-popup").setAttribute("style", "display: flex")
-        pause = true
+        pauseFunction()
     }
-
-    clock.elapsedTime = 0
+    
     stop = false
+    previousTime = clock.getElapsedTime()
     tick()
 }
 
@@ -256,22 +279,20 @@ document.querySelector('.start-button').addEventListener('click', startFunction)
 
 const stopGame = () => {
     stop = true
+    console.log(clock.running)
+    pauseFunction()
     document.getElementById("timer").innerHTML = "Game Over!"
     document.getElementById("popup").removeAttribute("style", "display: none")
     document.querySelector(".popup-score").innerHTML =  score * difficulties[selectedDifficulty].score
-    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score -1
+    document.querySelector(".popup-missed").innerHTML =  difficulties[selectedDifficulty].quantity - score -1 
     document.querySelector('.popup-button').addEventListener('click', restartGame)
+    
 }
 
 // Pause function
 const pauseFunction = () => {
     if(!stop) {
         pause = !pause
-        if(clock.running) {
-            clock.stop()
-        } else {
-            clock.start()
-        }
     }
 }
 
@@ -284,14 +305,12 @@ function hidePopup() {
 
 const restartGame = () => {
     hidePopup()
-    clock.elapsedTime = 0
     document.getElementById("popup2").removeAttribute("style", "display: none")
     score = 0
     gameTime = totalGameTime
     gamePrevousTime = totalGameTime
     elapsedTimeBetweenGameTimes = 0
     previousTime = 0
-    
 }
 
 // Raycaster function
@@ -364,16 +383,18 @@ const fullscreenPage = () => {
 // const orbitControls = new OrbitControls(camera, canvas)
 // orbitControls.enableDamping = true
 
-const tick = () => {
-
+const tick = () => {    
 
     if(!stop && !pause) {
-        const elapsedTime = clock.getElapsedTime()
 
         if(!stop && gameTime <= 0 && objToUpdate.length == 0) {
             stopGame()
         }
-        gameTime = totalGameTime - elapsedTime
+        const elapsedTime = clock.getElapsedTime()
+
+        const deltaTime = elapsedTime - previousTime
+        previousTime = elapsedTime
+        gameTime = gameTime - deltaTime
         elapsedTimeBetweenGameTimes = gamePrevousTime - gameTime
 
         // Update Timer
@@ -381,8 +402,7 @@ const tick = () => {
             
         // console.log(gamePrevousTime - gameTime)
 
-        const deltaTime = elapsedTime - previousTime
-        previousTime = elapsedTime
+        
 
         // Update objects
         updateObjects(deltaTime)

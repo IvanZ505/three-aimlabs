@@ -2,6 +2,7 @@ html, body {
     margin: 0;
     padding: 0;
     background-color: black;
+    font-family: 'Comic Sans MS', bold , sans-serif;
 }
 
 /* Canvas */
@@ -87,7 +88,6 @@ canvas {
     display: inline-flex;
   font-weight: 300;
   font-size: 1.35em;
-  font-family: 'Comic Sans MS', bold , sans-serif;
   cursor: pointer;
   -webkit-transition: all 0.25s linear;
   align-items: center;
